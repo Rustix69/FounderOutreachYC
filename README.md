@@ -20,16 +20,19 @@ The **Sent by batch** panel shows, per batch, how many companies you have emaile
 email address, with a progress bar. It reads a small Supabase database, so it is the same in every browser and survives
 clearing your browser data.
 
-1. Create a free project at supabase.com and run `supabase.sql` in its SQL editor (three small tables, all locked down:
-   only the server's secret key can read or write them).
+1. Create a free project at supabase.com and three small tables (turn row level security on and add no policies, so only
+   the server's secret key can read or write them):
+
+   | Table | Columns |
+   |---|---|
+   | `yc_sent_mail` | `email` (primary key), `founder`, `company`, `batch`, `kind`, `status`, `detail`, `sent_at` |
+   | `yc_batch_done` | `batch` (primary key), `marked_at` |
+   | `yc_batch_stats` | `batch` (primary key), `total`, `mailable`, `scanned_at` |
 2. Put `SUPABASE_URL` and `SUPABASE_SECRET_KEY` (the `sb_secret_...` key) in `.env.local`. The key stays on the server.
 3. After each send, `/api/send` saves one row per email (address, founder, company, batch). Send all skips anyone already
    in the history or in the engine's sent log.
 4. Use **Mark done** on a batch you have finished. A batch's bar counts against the companies that have an email; load a
-   whole batch once (or run `scripts/scan-batches.mjs`) so the app knows how many that is.
-
-Already emailed people before using this? `scripts/import-sent-log.mjs` imports the engine's `sent_log.txt` and works out
-each address's company and batch (see the comments at the top of the script).
+   whole batch once so the app knows how many that is.
 
 ## What it does
 
@@ -64,7 +67,6 @@ Your details, template, "sent" marks and loaded batches are stored in your brows
 | `app/api/send/route.ts` | Forwards a batch to the EmailEngine (`ENGINE_URL`, default `http://localhost:6969`) and records each result in Supabase. Localhost only. |
 | `app/api/sent`, `stats`, `batch-done`, `batch-stats` | Sent addresses, per-batch counts, and the done / mailable markers behind the **Sent by batch** panel. Localhost only. |
 | `lib/db.ts` | Server only: the Supabase client (secret key). |
-| `supabase.sql`, `scripts/` | Table definitions, and one-off import / scan scripts. |
 
 ## Notes
 
